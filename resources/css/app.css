@@ -6,15 +6,15 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Cormorant Infant', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 @import url('https://fonts.googleapis.com/css2?family=Caudex:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
+
+  cursor: url('../../public/assets/others/cursor.png'), auto;
 }
 
 html, body, #app {
@@ -23,6 +23,7 @@ html, body, #app {
   overflow: hidden;
   background-color: #00022c;
   font-family: 'Caudex', serif;
+
 }
 
 @keyframes bounce {
@@ -64,4 +65,11 @@ html, body, #app {
 
 .fish-swim-left {
   animation: swimLeft 30s linear infinite;
+}
+
+.cormorant-infant-<uniquifier> {
+  font-family: "Cormorant Infant", serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
 }
