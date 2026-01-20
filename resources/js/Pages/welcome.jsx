@@ -20,17 +20,21 @@ export default function Welcome() {
 
     const styles = `
    @keyframes rumble {
-      0% { transform: translate(0, 0) scale(1.0); }
-      10% { transform: translate(-1px, -1px) scale(1.0); }
-      20% { transform: translate(1px, 1px) scale(1.0); }
-      30% { transform: translate(-2px, 1px) scale(1.0); }
-      40% { transform: translate(2px, -1px) scale(1.0); }
-      50% { transform: translate(-1px, 2px) scale(1.0); }
-      60% { transform: translate(1px, -2px) scale(1.0); }
-      70% { transform: translate(-2px, -1px) scale(1.0); }
-      80% { transform: translate(2px, 1px) scale(1.0); }
-      90% { transform: translate(-1px, 0) scale(1.0); }
-      100% { transform: translate(0, 0) scale(1.0); }
+      0% { transform: translate(0, 0) scale(1.02); }
+      10% { transform: translate(-1px, -1px) scale(1.02); }
+      20% { transform: translate(1px, 1px) scale(1.02); }
+      30% { transform: translate(-2px, 1px) scale(1.02); }
+      40% { transform: translate(2px, -1px) scale(1.02); }
+      50% { transform: translate(-1px, 2px) scale(1.02); }
+      60% { transform: translate(1px, -2px) scale(1.02); }
+      70% { transform: translate(-2px, -1px) scale(1.02); }
+      80% { transform: translate(2px, 1px) scale(1.02); }
+      90% { transform: translate(-1px, 0) scale(1.02); }
+      100% { transform: translate(0, 0) scale(1.02); }
+    }
+      .rumble-effect {
+        animation: rumble 0.3s infinite linear;
+        transform-origin: center center;
     }
  @keyframes swimLeftTop {
     /* Ikan bawah kiri */
@@ -81,11 +85,6 @@ export default function Welcome() {
     .fish-filter {
      filter: brightness(0.9) sepia(1) hue-rotate(190deg) saturate(2) contrast(1.5)}
     }
-    .rumble-effect {
-        animation: rumble 0.3s infinite linear;
-        transform: scale(1.1); 
-        transform-origin: center center;
-    }
 
     @keyframes fadeInSlow {
         from { opacity: 0; transform: translateY(20px); }
@@ -135,8 +134,6 @@ export default function Welcome() {
                                 position: 'relative', 
                                 width: '100%', 
                                 height: '100%',
-                                transform: 'scale(1.0)',
-                                transition: 'transform 0.1s' 
                             }}
                         >
                             <img src="/assets/backgrounds/cave_01.png" style={{ position: 'absolute', top: 0 , left: 0 ,width: '50.1%', height: '50.1%' ,objectFit: 'fill'}}/>
