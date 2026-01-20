@@ -18,22 +18,24 @@ export default function Welcome() {
     };
 
     const styles = `
-    @keyframes rumble {
-      0% { transform: translate(0, 0) scale(1.1); }
-      10% { transform: translate(-2px, -2px) scale(1.1); }
-      20% { transform: translate(2px, 2px) scale(1.1); }
-      30% { transform: translate(-2px, 2px) scale(1.1); }
-      40% { transform: translate(2px, -2px) scale(1.1); }
-      50% { transform: translate(-1px, -1px) scale(1.1); }
-      60% { transform: translate(1px, 1px) scale(1.1); }
-      70% { transform: translate(-1px, 1px) scale(1.1); }
-      80% { transform: translate(1px, -1px) scale(1.1); }
-      90% { transform: translate(0, 0) scale(1.1); }
-      100% { transform: translate(0, 0) scale(1.1); }
+   @keyframes rumble {
+      0% { transform: translate(0, 0) scale(1.0); }
+      10% { transform: translate(-1px, -1px) scale(1.0); }
+      20% { transform: translate(1px, 1px) scale(1.0); }
+      30% { transform: translate(-2px, 1px) scale(1.0); }
+      40% { transform: translate(2px, -1px) scale(1.0); }
+      50% { transform: translate(-1px, 2px) scale(1.0); }
+      60% { transform: translate(1px, -2px) scale(1.0); }
+      70% { transform: translate(-2px, -1px) scale(1.0); }
+      80% { transform: translate(2px, 1px) scale(1.0); }
+      90% { transform: translate(-1px, 0) scale(1.0); }
+      100% { transform: translate(0, 0) scale(1.0); }
     }
     
     .rumble-effect {
-        animation: rumble 0.5s infinite linear;
+        animation: rumble 0.3s infinite linear;
+        transform: scale(1.1); 
+        transform-origin: center center;
     }
 
     @keyframes fadeInSlow {
@@ -44,7 +46,7 @@ export default function Welcome() {
     .fade-in-start {
         opacity: 0;
         animation: fadeInSlow 2s ease-out forwards;
-        animation-delay: 1.5s; 
+        animation-delay: 1.8s; 
   `;
     return (
         <>
@@ -78,59 +80,20 @@ export default function Welcome() {
                             zIndex: 50,
                         }}
                     >
-                        <div style={{
-                            position: 'relative',
-                            width: '100%',
-                            height: '100%',
-                        }}>
-                            <img
-                                src="/assets/backgrounds/cave_01.png"
-                                className={isShaking ? "rumble-effect" : ""}
-                                style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    width: '50.1%', 
-                                    height: '50.1%',
-                                    objectFit: 'fill'
-                                }}
-                          />
-                            <img
-                                src="/assets/backgrounds/cave_02.png"
-                                className={isShaking ? "rumble-effect" : ""}
-                                style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    right: 0,
-                                    width: '50.1%', 
-                                    height: '50.1%',
-                                    objectFit: 'fill'
-                                }}
-                          />
-                            <img 
-                                src="/assets/backgrounds/cave_03.png" 
-                                className={isShaking ? "rumble-effect" : ""}
-                                style={{  
-                                    position: 'absolute',
-                                    bottom: 0, 
-                                    left: 0,
-                                    width: '50.1%',
-                                    height: '50.1%',
-                                    objectFit: 'fill'
-                                }}
-                           />
-                            <img 
-                                src="/assets/backgrounds/cave_04.png" 
-                                className={isShaking ? "rumble-effect" : ""}
-                                style={{
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    right: 0,
-                                    width: '50.1%',
-                                    height: '50.1%',
-                                    objectFit: 'fill'
-                                }}
-                            />
+                        <div 
+                            className={isShaking ? "rumble-effect" : ""}
+                            style={{ 
+                                position: 'relative', 
+                                width: '100%', 
+                                height: '100%',
+                                transform: 'scale(1.0)',
+                                transition: 'transform 0.1s' 
+                            }}
+                        >
+                            <img src="/assets/backgrounds/cave_01.png" style={{ position: 'absolute', top: 0 , left: 0 ,width: '50.1%', height: '50.1%' ,objectFit: 'fill'}}/>
+                            <img src="/assets/backgrounds/cave_02.png" style={{ position: 'absolute',top: 0,right: 0,width: '50.1%', height: '50.1%',objectFit: 'fill'}}/>
+                            <img src="/assets/backgrounds/cave_03.png" style={{ position: 'absolute',bottom: 0, left: 0,width: '50.1%',height: '50.1%',objectFit: 'fill'}}/>
+                            <img src="/assets/backgrounds/cave_04.png" style={{position: 'absolute',bottom: 0,right: 0,width: '50.1%',height: '50.1%',objectFit: 'fill'}}/>
                             </div>
                     </ParallaxLayer>
 
