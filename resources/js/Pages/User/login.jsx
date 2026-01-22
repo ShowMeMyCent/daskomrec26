@@ -18,16 +18,14 @@ export default function Login() {
     const doorRef = useRef(null);
     const roadRef = useRef(null);
 
-    // [UPDATED] Reset offsets because CSS now handles the centering
     const BASE_OFFSET = { x: 0, y: 430 };
     const OUT_OFFSET = { x: 0, y: 430 };
-    const IN_OFFSET = { x: 0, y: 1100 }; // Move down slightly when zooming in
+    const IN_OFFSET = { x: 0, y: 1200 };
 
-    // [UPDATED] Adjusted scales to work with natural image size
     const SCALE = {
-        bg: { enter: 1.0, idle: 1.7, out: 1 },
-        door: { enter: 1.0, idle: 1.7, in: 3.5, out: 1 },
-        road: { enter: 1.0, idle: 1.7, in: 3.5, out: 1 },
+        bg: { enter: 1.0, idle: 1.7, out: 1.2 },
+        door: { enter: 1.0, idle: 1.7, in: 3.5, out: 1.2 },
+        road: { enter: 1.0, idle: 1.7, in: 3.5, out: 1.2 },
         scroll: { enter: 0.6, idle: 1, in: 0.95, out: 0.6 },
     };
 
@@ -134,12 +132,9 @@ t
                 onClick={handleOutsideClick}
                 className="relative w-full min-h-screen overflow-hidden bg-[#0a243b]"
             >
-                {/* Overlays */}
-                <div className="absolute inset-0 bg-[#0c365b]/20 z-15 pointer-events-none mix-blend-overlay" />
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 to-blue-900/20 z-15 pointer-events-none mix-blend-color" />
                 <UnderwaterEffect/>
 
-                {/* 1. Main Ocean BG (Stays fullscreen) */}
+                {/* Main BG */}
                 <img 
                     src={background} 
                     alt="background" 
@@ -192,24 +187,59 @@ t
                             src={scroll}
                             alt="scroll"
                             className="w-auto max-h-full object-contain cold-blue-filter-scroll origin-center scale-125 sm:scale-170 md:scale-190"
-                        />
+                        />  
                         <div className="absolute inset-0 flex flex-col items-center justify-center px-8 sm:px-12 text-[#0b3a66] gap-1 sm:gap-6">
                             <h1 className="font-serif font-extrabold tracking-wide drop-shadow-lg text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4 text-center"
-                                style={{ fontFamily: 'Cormorant Infant', color: '#0c365b', textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' }}>
+                                style={{ 
+                                    fontFamily: 'Cormorant Infant', 
+                                    color: '#0c365b', 
+                                    textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' }}
+                            >
                                 Insert The Key
                             </h1>
+                            
                             <form onSubmit={handleSubmit} className="w-[80%] sm:w-[90%] max-w-105 flex flex-col gap-3 sm:gap-4">
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-serif font-bold text-lg sm:text-xl md:text-3xl" style={{ color: '#0c365b' }}>Username</label>
-                                    <BlueInputBox value={data.username} onChange={(e) => setData('username', e.target.value)} />
+                                    <label 
+                                        className="font-serif font-bold text-lg sm:text-xl md:text-3xl" 
+                                        style={{ color: '#0c365b' }}
+                                    >
+                                        Username
+                                    </label>
+                                    <BlueInputBox 
+                                        value={data.username} 
+                                        onChange={(e) => setData('username', e.target.value)} 
+                                    />
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-serif font-bold text-lg sm:text-xl md:text-3xl" style={{ color: '#0c365b' }}>Password</label>
-                                    <BlueInputBox type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+                                    <label 
+                                        className="font-serif font-bold text-lg sm:text-xl md:text-3xl" 
+                                        style={{ color: '#0c365b' }}
+                                    >
+                                        Password
+                                    </label>
+                                    <BlueInputBox 
+                                        type="password" 
+                                        value={data.password} 
+                                        onChange={(e) => setData('password', e.target.value)} 
+                                    />
                                 </div>
-                                <button type="submit" disabled={processing} className="mt-4 sm:mt-6 relative self-center transition-transform duration-300 hover:scale-110">
-                                    <img src={Sign04} alt="Start" className="w-45 sm:w-55 h-9 sm:h-13 drop-shadow-[0_0_20px_rgba(96,165,250,0.8)] cold-blue-filter-light" />
-                                    <span className="absolute inset-0 flex items-center justify-center text-xl sm:text-3xl font-extrabold tracking-[2px]" style={{ color: '#e0f2fe', textShadow: '0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(96, 165, 250, 0.5)' }}>
+                                <button 
+                                    type="submit" 
+                                    disabled={processing} 
+                                    className="mt-4 sm:mt-6 relative self-center transition-transform duration-300 hover:scale-110"
+                                >
+                                    <img 
+                                        src={Sign04} 
+                                        alt="Start" 
+                                        className="w-45 sm:w-55 h-9 sm:h-13 drop-shadow-[0_0_20px_rgba(96,165,250,0.8)] cold-blue-filter-light" 
+                                    />
+                                    <span 
+                                        className="absolute inset-0 flex items-center justify-center text-xl sm:text-3xl font-extrabold tracking-[2px]" 
+                                        style={{ 
+                                            color: '#e0f2fe', 
+                                            textShadow: '0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(96, 165, 250, 0.5)' 
+                                        }}>
                                         Dive In
                                     </span>
                                 </button>
@@ -221,7 +251,10 @@ t
                 <div className="absolute inset-0 z-30 pointer-events-none mix-blend-lighten opacity-30">
                     <div className="absolute inset-0 bg-linear-to-b from-cyan-400/5 via-transparent to-blue-500/5" />
                 </div>
-                <div className="fixed inset-0 z-50 pointer-events-none transition-opacity duration-1000 ease-in-out" style={{ background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)', opacity: showColorFade ? 1 : 0 }} />
+                <div 
+                    className="fixed inset-0 z-50 pointer-events-none transition-opacity duration-1000 ease-in-out" 
+                    style={{ background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)', opacity: showColorFade ? 1 : 0 }} 
+                />
             </div>
         </>
     );

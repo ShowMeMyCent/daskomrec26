@@ -321,7 +321,7 @@ export default function Welcome() {
                             className={`
                                 relative mb-75
                                 transition-all duration-1000 ease-in-out
-                                ${isLockedIn ? 'opacity-0 scale-100 blur-sm' : 'opacity-100 hover:scale-110'}
+                                ${isLockedIn ? 'opacity-0 scale-140 blur-sm' : 'opacity-100 hover:scale-110'}
                             `}
                         >
                             <img 

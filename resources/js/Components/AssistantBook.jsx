@@ -4,21 +4,19 @@ import HTMLFlipBook from 'react-pageflip';
 import coverImage from '@assets/cards/books/FrontCover.png';
 import backCoverImage from '@assets/cards/books/BackCover.png';
 
-// === CONFIGURATION ===
 const TOTAL_PAGES = 89;
 const IMAGE_PATH_PREFIX = '/assets/cards/books'; 
 const SEPIA_COLOR = '#f2e8d5';
 
-// Crop Settings (Retained from your previous code)
 const CROP_WIDTH = '145%'; 
 const CROP_HEIGHT = '115%'; 
+
+const COVER_WIDTH = '210%';
+const COVER_HEIGHT = '115%';
 
 const MAX_ROTATION = 5;
 const BUBBLE_COUNT = 12;
 
-// ==========================================
-// 1. PAGE COMPONENT
-// ==========================================
 const Page = forwardRef((props, ref) => {
   const isRightPage = props.number % 2 !== 0; 
 
@@ -31,6 +29,7 @@ const Page = forwardRef((props, ref) => {
            border: 'none',
         }}
       >
+        {/* Outside Shadow */}
         <div 
           className="absolute inset-0 w-full h-full"
           style={{
@@ -38,14 +37,13 @@ const Page = forwardRef((props, ref) => {
             backgroundSize: `${CROP_WIDTH} ${CROP_HEIGHT}`, 
             backgroundPosition: 'center center', 
             backgroundRepeat: 'no-repeat',
-            // Inner shadow for depth
             boxShadow: isRightPage 
                 ? 'inset 15px 0 20px -10px rgba(0,0,0,0.7)' 
                 : 'inset -15px 0 20px -10px rgba(0,0,0,0.7)' 
           }}
         />
 
-        {/* Extra shadow layer for depth */}
+        {/* Inner Shadow */}
         <div 
             className="absolute inset-0 pointer-events-none" 
             style={{ 
@@ -64,9 +62,6 @@ const Page = forwardRef((props, ref) => {
 });
 Page.displayName = 'Page';
 
-// ==========================================
-// 2. COVER COMPONENT
-// ==========================================
 const Cover = forwardRef((props, ref) => {
   return (
     <div className="cover" ref={ref} data-density="hard">
@@ -74,7 +69,7 @@ const Cover = forwardRef((props, ref) => {
         className="relative w-full h-full"
         style={{
           backgroundImage: `url(${props.bgImage})`,
-          backgroundSize: 'cover', 
+          backgroundSize: `${COVER_WIDTH} ${COVER_HEIGHT}`, 
           backgroundPosition: 'center',
           boxShadow: 'inset 0 0 15px rgba(0,0,0,0)', 
           filter: `
