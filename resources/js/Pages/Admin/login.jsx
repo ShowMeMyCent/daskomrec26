@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 
 import background from '@assets/backgrounds/utama.png';
@@ -34,12 +34,14 @@ export default function Login() {
     const [showColorFade, setShowColorFade] = useState(false);
     const [fadeScroll, setFadeScroll] = useState(false);
 
-    const { data, setData, processing } = useForm({ username: '', password: '' });
+    const { data, setData, processing, errors, setError, clearErrors } = useForm({ 
+        username: '', 
+        password: '' 
+    });
 
     const getTransform = (type) => {
         const scale = SCALE[type][cameraState] ?? SCALE[type].idle;
         const offset = cameraState === 'out' ? OUT_OFFSET : (cameraState === 'in' ? IN_OFFSET : BASE_OFFSET);
-
         return `translate(${offset.x}px, ${offset.y}px) scale(${scale})`;
     };
 
@@ -49,14 +51,12 @@ export default function Login() {
 
         rafRef.current = requestAnimationFrame(() => {
             if (!trialRef.current || !roadRef.current) return;
-
             const { innerWidth, innerHeight } = window;
             const x = (e.clientX / innerWidth - 0.5) * 30;
             const y = (e.clientY / innerHeight - 0.5) * 30;
 
             trialRef.current.style.transform = `translate(${x}px, ${y}px) scale(${SCALE.bg.idle})`;
             roadRef.current.style.transform = `translate(${x}px, ${y}px) scale(${SCALE.road.idle})`;
-
             rafRef.current = null;
         });
     };
@@ -78,6 +78,14 @@ export default function Login() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (cameraState !== 'idle') return;
+
+        clearErrors();
+
+        // --- DUMMY LOGIC ---
+        if (data.password !== 'atlantis') {
+            setError('password', 'Invalid Key');
+            return;
+        }
 
         setFadeScroll(true);
         setTimeout(() => setCameraState('in'), 500);
@@ -102,6 +110,8 @@ export default function Login() {
     const doorStyle = { ...commonTransformStyle, transform: getTransform('door') };
     const roadStyle = { ...commonTransformStyle, transform: getTransform('road') };
 
+    const hasError = Object.keys(errors).length > 0;
+
     return (
         <>
             <Head title="Login" />
@@ -112,13 +122,16 @@ export default function Login() {
                 .deep-ocean-bg {
                     filter: brightness(0.8) saturate(1.2) contrast(1.1);
                 }
-                .cold-blue-filter-scroll { filter: brightness(1.1) contrast(1) saturate(0.2) hue-rotate(0deg) sepia(0.2); }
+                .cold-blue-filter-scroll { filter: brightness(1.1) contrast(1) saturate(0.2) hue-rotate(220deg) sepia(0.2); }
                 
-                .bottom-centered-asset {
-                    position: absolute;
-                    bottom: 0;
-                    left: 50%;
+                @keyframes errorShake {
+                    0%, 100% { transform: translateX(0); }
+                    20% { transform: translateX(-10px); }
+                    40% { transform: translateX(10px); }
+                    60% { transform: translateX(-10px); }
+                    80% { transform: translateX(10px); }
                 }
+                .shake { animation: errorShake 0.5s ease-in-out; }
             `}</style>
 
             <div
@@ -127,48 +140,27 @@ export default function Login() {
                 onClick={handleOutsideClick}
                 className="relative w-full min-h-screen overflow-hidden bg-[#0a243b]"
             >
-                <UnderwaterEffect/>
-
-                {/* Main BG */}
-                <img 
-                    src={background} 
-                    alt="background" 
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none deep-ocean-bg" 
-                />
+                {/* --- LAYER 1: BG --- */}
+                <img src={background} alt="bg" className="absolute inset-0 w-full h-full object-cover pointer-events-none deep-ocean-bg z-0" />
                 
-                {/* --- Atlantis Door --- */}
-                <img 
-                    ref={roadRef} 
-                    src={road} 
-                    alt="road" 
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-auto h-auto min-w-[1200px] max-w-[2000px] z-5 atlantis-sync" 
-                    style={roadStyle} 
-                />
-                
-                <img 
-                    ref={trialRef} 
-                    src={trial} 
-                    alt="background" 
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-auto h-auto min-w-[1200px] max-w-[2000px] z-0 atlantis-sync" 
-                    style={bgStyle} 
-                />
-                
-                <img 
-                    ref={doorRef} 
-                    src={cameraState === 'in' ? door_opened : door_closed} 
-                    alt="door" 
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-auto h-auto min-w-[1200px] max-w-[2000px] z-10 atlantis-sync" 
-                    style={doorStyle} 
-                />
+                {/* --- LAYER 2: UNDERWATER EFFECT (Behind Assets) --- */}
+                <div className="absolute inset-0 z-10 pointer-events-none">
+                    <UnderwaterEffect />
+                </div>
 
-                {/* Blur & glow overlays */}
-                <div className="absolute inset-0 backdrop-blur-[2px] bg-black/10 z-20 pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-b from-cyan-800/5 via-blue-900/10 to-indigo-900/15 z-25 pointer-events-none mix-blend-screen" />
+                {/* --- LAYER 3: ASSETS --- */}
+                <img ref={roadRef} src={road} className="absolute bottom-0 left-1/2 -translate-x-1/2 w-auto h-auto min-w-[1200px] max-w-[2000px] z-20 atlantis-sync" style={roadStyle} />
+                <img ref={trialRef} src={trial} className="absolute bottom-0 left-1/2 -translate-x-1/2 w-auto h-auto min-w-[1200px] max-w-[2000px] z-15 atlantis-sync" style={bgStyle} />
+                <img ref={doorRef} src={cameraState === 'in' ? door_opened : door_closed} className="absolute bottom-0 left-1/2 -translate-x-1/2 w-auto h-auto min-w-[1200px] max-w-[2000px] z-25 atlantis-sync" style={doorStyle} />
 
-                {/* Scroll & Form */}
+                {/* Overlays */}
+                <div className="absolute inset-0 backdrop-blur-[2px] bg-black/10 z-30 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-800/5 via-blue-900/10 to-indigo-900/15 z-35 pointer-events-none mix-blend-screen" />
+
+                {/* --- LAYER 4: LOGIN FORM --- */}
                 <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none" ref={scrollWrapperRef}>
                     <div
-                        className="flex flex-col items-center justify-center transition-all duration-1000 ease-in-out"
+                        className={`flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${hasError ? 'shake' : ''}`}
                         style={{
                             transform: `scale(${SCALE.scroll[cameraState] ?? SCALE.scroll.idle})`,
                             opacity: fadeScroll ? 0 : (cameraState === 'enter' || cameraState === 'out' ? 0 : 1),
@@ -178,86 +170,39 @@ export default function Login() {
                             maxHeight: '90vh',
                         }}
                     >
-                        <img
-                            src={scroll}
-                            alt="scroll"
-                            className="w-auto max-h-full object-contain cold-blue-filter-scroll origin-center scale-125 sm:scale-170 md:scale-190"
-                        />  
+                        <img src={scroll} className="w-auto max-h-full object-contain cold-blue-filter-scroll origin-center scale-125 sm:scale-170 md:scale-190" />  
                         <div className="absolute inset-0 flex flex-col items-center justify-center px-14 sm:px-12 text-[#0b3a66] gap-1 sm:gap-6">
                             <h1 className="font-serif font-extrabold tracking-wide drop-shadow-lg text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4 text-center"
-                                style={{ 
-                                    fontFamily: 'Cormorant Infant', 
-                                    color: '#0c365b', 
-                                    textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' }}
+                                style={{ fontFamily: 'Cormorant Infant', color: hasError ? '#7f1d1d' : '#0c365b', textShadow: '0 2px 10px rgba(12, 54, 91, 0.3)' }}
                             >
-                                Prove yourself...
+                                {hasError ? "Access Denied" : "Prove yourself..."}
                             </h1>
                             
                             <form onSubmit={handleSubmit} className="w-[80%] sm:w-[90%] max-w-105 flex flex-col gap-3 sm:gap-4">
                                 <div className="flex flex-col gap-1">
-                                    <label 
-                                        className="font-serif font-bold text-xl sm:text-2xl md:text-4xl" 
-                                        style={{ 
-                                            fontFamily: 'Cormorant Infant', 
-                                            color: '#0c365b', 
-                                            textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' 
-                                        }}
-                                    >
-                                        Username
-                                    </label>
-                                    <BlueInputBox 
-                                        value={data.username} 
-                                        onChange={(e) => setData('username', e.target.value)} 
-                                    />
+                                    <label className="font-serif font-bold text-xl sm:text-2xl md:text-4xl" style={{ fontFamily: 'Cormorant Infant', color: '#0c365b' }}>Username</label>
+                                    <BlueInputBox value={data.username} onChange={(e) => setData('username', e.target.value)} />
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                    <label 
-                                        className="font-serif font-bold text-xl sm:text-2xl md:text-4xl" 
-                                        style={{ 
-                                            fontFamily: 'Cormorant Infant', 
-                                            color: '#0c365b', 
-                                            textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' 
-                                        }}
-                                    >
-                                        Password
-                                    </label>
-                                    <BlueInputBox 
-                                        type="password" 
-                                        value={data.password} 
-                                        onChange={(e) => setData('password', e.target.value)} 
-                                    />
+                                    <label className="font-serif font-bold text-xl sm:text-2xl md:text-4xl" style={{ fontFamily: 'Cormorant Infant', color: '#0c365b' }}>Password</label>
+                                    <BlueInputBox type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
                                 </div>
-                                <button 
-                                    type="submit" 
-                                    disabled={processing} 
-                                    className="mt-4 sm:mt-6 relative self-center transition-transform duration-300 hover:scale-110"
-                                >
-                                    <img 
-                                        src={Sign04} 
-                                        alt="Start" 
-                                        className="w-45 sm:w-55 h-9 sm:h-13 drop-shadow-[0_0_20px_rgba(96,165,250,0.8)] cold-blue-filter-light" 
-                                    />
-                                    <span 
-                                        className="absolute inset-0 flex items-center justify-center text-xl sm:text-3xl font-extrabold tracking-[2px]" 
-                                        style={{ 
-                                            color: '#e0f2fe', 
-                                            textShadow: '0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(96, 165, 250, 0.5)' 
-                                        }}>
-                                        Dive In
-                                    </span>
+
+                                {hasError && (
+                                    <p className="text-red-700 font-serif font-bold text-center text-sm animate-pulse">The key does not match the lock...</p>
+                                )}
+
+                                <button type="submit" disabled={processing} className="mt-4 sm:mt-6 relative self-center transition-transform duration-300 hover:scale-110">
+                                    <img src={Sign04} className="w-45 sm:w-55 h-9 sm:h-13 drop-shadow-[0_0_20px_rgba(96,165,250,0.8)] cold-blue-filter-light" />
+                                    <span className="absolute inset-0 flex items-center justify-center text-xl sm:text-3xl font-extrabold tracking-[2px]" style={{ color: '#e0f2fe', textShadow: '0 0 10px rgba(56, 189, 248, 0.7)' }}>Dive In</span>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                <div className="absolute inset-0 z-30 pointer-events-none mix-blend-lighten opacity-30">
-                    <div className="absolute inset-0 bg-linear-to-b from-cyan-400/5 via-transparent to-blue-500/5" />
-                </div>
-                <div 
-                    className="fixed inset-0 z-50 pointer-events-none transition-opacity duration-1000 ease-in-out" 
-                    style={{ background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)', opacity: showColorFade ? 1 : 0 }} 
-                />
+                {/* Transition Fade */}
+                <div className="fixed inset-0 z-50 pointer-events-none transition-opacity duration-1000 ease-in-out" style={{ background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)', opacity: showColorFade ? 1 : 0 }} />
             </div>
         </>
     );

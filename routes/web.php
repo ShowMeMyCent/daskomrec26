@@ -49,3 +49,15 @@ Route::get('/admin/login', function () {
 Route::get('/admin/home', function () {
     return inertia('Admin/home');
 });
+
+Route::get('/admin/shift', function () {
+    return inertia('Admin/shift');
+});
+
+Route::get('/admin/password', function () {
+    return inertia('Admin/password');
+});
+
+Route::get('/admin/caas', function () {
+    return inertia('Admin/caas');
+});

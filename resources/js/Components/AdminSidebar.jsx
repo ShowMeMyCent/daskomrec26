@@ -9,35 +9,11 @@ import ButtonChain from '@assets/buttons/ButtonChain.png'
 import ButtonCores from '@assets/buttons/ButtonCores.png';
 
 export default function UserSidebar({ isOpen, onClose, onLogout }) {
-    const [coreUnlocked, setCoreUnlocked] = useState(true);
-    const [wiggle, setWiggle] = useState(false);
-    const [coreClickCount, setCoreClickCount] = useState(0);
-    const clickTimer = useRef(null);
-
     const buttonWrapper =
         "relative transition-transform duration-300 hover:scale-110 active:scale-95";
 
     const imageStyle =
         "w-100 h-auto drop-shadow-[0_0_16px_rgba(96,165,250,0.6)] hover:drop-shadow-[0_0_28px_rgba(96,165,250,0.9)]";
-
-    const handleCoreClick = () => {
-        if (!coreUnlocked) {
-            setWiggle(true);
-            setTimeout(() => setWiggle(false), 300);
-
-            setCoreClickCount(prev => {
-                const newCount = prev + 1;
-                if (clickTimer.current) clearTimeout(clickTimer.current);
-                clickTimer.current = setTimeout(() => setCoreClickCount(0), 2000);
-                if (newCount >= 3) {
-                    router.visit('/user'); 
-                }
-                return newCount;
-            });
-        } else {
-            router.visit('/user/cores')
-        }
-    };
 
     const handleLogoutClick = () => {
         if (onLogout) onLogout();
@@ -79,7 +55,7 @@ export default function UserSidebar({ isOpen, onClose, onLogout }) {
 
                         {/* Profile / Password */}
                         <div className="flex flex-col gap-2">
-                            <button type="button" className={buttonWrapper} onClick={() => {router.visit('/user/password')}}>
+                            <button type="button" className={buttonWrapper} onClick={() => {router.visit('/admin/password')}}>
                                 <img src={ButtonRegular} className={imageStyle} alt="Change Password"/>
                                 <span 
                                     className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold mb-2" 
@@ -94,18 +70,7 @@ export default function UserSidebar({ isOpen, onClose, onLogout }) {
 
                         {/* Announcement / Shift / Core */}
                         <div className="flex flex-col gap-2">
-                            <button type="button" className={buttonWrapper} onClick={() => {router.visit('/user/announcement')}}>
-                                <img src={ButtonChain} className={imageStyle} alt="Announcement"/>
-                                <span 
-                                    className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold mb-2" 
-                                    style={{ 
-                                        color: '#e0f2fe', 
-                                        textShadow: '0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(96, 165, 250, 0.5)' 
-                                    }}>
-                                    ANNOUNCEMENT
-                                </span>
-                            </button>
-                            <button type="button" className={buttonWrapper} onClick={() => {router.visit('/user/shift')}}>
+                            <button type="button" className={buttonWrapper} onClick={() => {router.visit('/admin/shift')}}>
                                 <img src={ButtonRegular} className={imageStyle} alt="Announcement"/>
                                 <span 
                                     className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold mb-2" 
@@ -116,11 +81,7 @@ export default function UserSidebar({ isOpen, onClose, onLogout }) {
                                     SHIFT
                                 </span>
                             </button>
-                            <button
-                                type="button"
-                                className={`${buttonWrapper} ${wiggle ? 'animate-wiggle' : ''}`}
-                                onClick={handleCoreClick}
-                            >
+                            <button type="button" className={buttonWrapper} onClick={() => {router.visit('/admin/caas')}}>
                                 <img
                                     src={ButtonCores}
                                     className={imageStyle}

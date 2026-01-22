@@ -34,7 +34,11 @@ export default function Login() {
     const [showColorFade, setShowColorFade] = useState(false);
     const [fadeScroll, setFadeScroll] = useState(false);
 
-    const { data, setData, processing } = useForm({ username: '', password: '' });
+    // Added errors and setError for indicator logic
+    const { data, setData, processing, errors, setError, clearErrors } = useForm({ 
+        username: '', 
+        password: '' 
+    });
 
     const getTransform = (type) => {
         const scale = SCALE[type][cameraState] ?? SCALE[type].idle;
@@ -43,7 +47,6 @@ export default function Login() {
         return `translate(${offset.x}px, ${offset.y}px) scale(${scale})`;
     };
 
-    // Parallax effect
     const handleMouseMove = (e) => {
         if (rafRef.current || isIntro || cameraState !== 'idle') return;
 
@@ -79,6 +82,15 @@ export default function Login() {
         e.preventDefault();
         if (cameraState !== 'idle') return;
 
+        clearErrors();
+
+        // --- DUMMY TEST LOGIC ---
+        // Change "atlantis" to your preferred test password
+        if (data.password !== 'atlantis') {
+            setError('password', 'Incorrect key provided.');
+            return;
+        }
+
         setFadeScroll(true);
         setTimeout(() => setCameraState('in'), 500);
         setTimeout(() => setShowColorFade(true), 800);
@@ -102,6 +114,9 @@ export default function Login() {
     const doorStyle = { ...commonTransformStyle, transform: getTransform('door') };
     const roadStyle = { ...commonTransformStyle, transform: getTransform('road') };
 
+    // Derived state for the shake animation
+    const hasError = Object.keys(errors).length > 0;
+
     return (
         <>
             <Head title="Login" />
@@ -114,15 +129,22 @@ export default function Login() {
                 }
                 .cold-blue-filter-scroll { filter: brightness(1.1) contrast(1) saturate(0.2) hue-rotate(220deg) sepia(0.2); }
                 
-                /* [NEW] Shared placement class to match Welcome.js */
                 .bottom-centered-asset {
                     position: absolute;
                     bottom: 0;
                     left: 50%;
-                    /* We use margin-left or transform in JS, but here strictly CSS centering */
-                    /* Note: The JS parallax adds 'translate', so we must be careful not to conflict. */
-                    /* We will use a wrapper-less approach: relying on the JS 'translate' to include the centering? 
-                       No, that's messy. Let's keep the -translate-x-1/2 in CSS and let JS add RELATIVE movement. */
+                }
+
+                /* Shake Animation for wrong password */
+                @keyframes errorShake {
+                    0%, 100% { transform: translateX(0); }
+                    20% { transform: translateX(-10px); }
+                    40% { transform: translateX(10px); }
+                    60% { transform: translateX(-10px); }
+                    80% { transform: translateX(10px); }
+                }
+                .shake {
+                    animation: errorShake 0.5s cubic-bezier(.36,.07,.19,.97) both;
                 }
             `}</style>
 
@@ -141,7 +163,6 @@ export default function Login() {
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none deep-ocean-bg" 
                 />
                 
-                {/* --- Atlantis Door --- */}
                 <img 
                     ref={roadRef} 
                     src={road} 
@@ -166,14 +187,13 @@ export default function Login() {
                     style={doorStyle} 
                 />
 
-                {/* Blur & glow overlays */}
                 <div className="absolute inset-0 backdrop-blur-[2px] bg-black/10 z-20 pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-800/5 via-blue-900/10 to-indigo-900/15 z-25 pointer-events-none mix-blend-screen" />
 
                 {/* Scroll & Form */}
                 <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none" ref={scrollWrapperRef}>
                     <div
-                        className="flex flex-col items-center justify-center transition-all duration-1000 ease-in-out"
+                        className={`flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${hasError ? 'shake' : ''}`}
                         style={{
                             transform: `scale(${SCALE.scroll[cameraState] ?? SCALE.scroll.idle})`,
                             opacity: fadeScroll ? 0 : (cameraState === 'enter' || cameraState === 'out' ? 0 : 1),
@@ -192,10 +212,11 @@ export default function Login() {
                             <h1 className="font-serif font-extrabold tracking-wide drop-shadow-lg text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4 text-center"
                                 style={{ 
                                     fontFamily: 'Cormorant Infant', 
-                                    color: '#0c365b', 
-                                    textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' }}
+                                    color: hasError ? '#7f1d1d' : '#0c365b', // Changes title to dark red on error
+                                    textShadow: '0 2px 10px rgba(12, 54, 91, 0.3), 0 0 20px rgba(96, 165, 250, 0.2)' 
+                                }}
                             >
-                                Insert The Key
+                                {hasError ? 'Access Denied' : 'Insert The Key'}
                             </h1>
                             
                             <form onSubmit={handleSubmit} className="w-[80%] sm:w-[90%] max-w-105 flex flex-col gap-3 sm:gap-4">
@@ -232,10 +253,18 @@ export default function Login() {
                                         onChange={(e) => setData('password', e.target.value)} 
                                     />
                                 </div>
+
+                                {/* Red Error Message */}
+                                {hasError && (
+                                    <p className="text-red-700 font-serif font-bold text-center text-sm animate-pulse tracking-tight">
+                                        The key does not match the lock...
+                                    </p>
+                                )}
+
                                 <button 
                                     type="submit" 
                                     disabled={processing} 
-                                    className="mt-4 sm:mt-6 relative self-center transition-transform duration-300 hover:scale-110"
+                                    className="mt-4 sm:mt-2 relative self-center transition-transform duration-300 hover:scale-110"
                                 >
                                     <img 
                                         src={Sign04} 
