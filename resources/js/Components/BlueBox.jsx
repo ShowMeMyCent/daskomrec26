@@ -9,14 +9,14 @@ export default function BlueModalWrapper({ isOpen, onClose, children, className 
         <div className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-xs transition-opacity duration-300">
             <div className="relative w-full max-w-[700px] aspect-[4/3] flex flex-col items-center justify-center animate-popup">
                 
-                {/* 1. BACKGROUND FRAME (Tetap ada) */}
+                {/* 1. BACKGROUND FRAME */}
                 <img
                     src={popupFrameBlue}
                     alt="popup frame"
                     className="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-2xl"
                 />
 
-                {/* 2. TOMBOL CLOSE (Tetap ada) */}
+                {/* 2. TOMBOL CLOSE */}
                 <button
                     onClick={onClose}
                     className="absolute top-[25%] right-[17%] z-20 w-16 h-16 hover:scale-110 transition-transform active:scale-90"
@@ -28,7 +28,7 @@ export default function BlueModalWrapper({ isOpen, onClose, children, className 
                     />
                 </button>
 
-                {/* 3. AREA KONTEN DINAMIS (Safe Area) */}
+                {/* 3. AREA KONTEN DINAMIS */}
                 <div className={`absolute top-[30%] bottom-[25%] left-[18%] right-[18%] z-10 overflow-hidden ${className}`}>
                     {children}
                 </div>
