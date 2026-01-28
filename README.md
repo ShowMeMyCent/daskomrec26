@@ -15,7 +15,8 @@ DLOR 2026 is a recruitment platform designed to streamline the application proce
 - User-friendly application form  
 - Secure authentication system  
 - Real-time updates on application status  
-- Admin dashboard for managing recruitment  
+- Admin dashboard for managing recruitment
+- Nice looking UI and intuitive UX
 
 ## Team Members  
 - [Jyothi Divyananda](https://github.com/jyowl) (JYO)  
@@ -26,5 +27,5 @@ DLOR 2026 is a recruitment platform designed to streamline the application proce
 
 ## Development using Distrobox
 Distrobox is basically a nice wrapper for docker and podman to containerize your workspaces 
-(Linux only, you can use docker directly for Windows or MacOS).
-For further instruction, you may see this file [DISTROBOX.md](./DISTROBOX.md)
+(Linux only, you can use docker directly if you use Windows or MacOS).
+For further instruction, you may see this file [docs/DISTROBOX.md](./DISTROBOX.md)
