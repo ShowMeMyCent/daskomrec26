@@ -1,9 +1,17 @@
 <?php
 
+use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StageController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::resource('user', UserController::class);
+Route::resource('stage', StageController::class);
+Route::resource('shift', ShiftController::class);
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

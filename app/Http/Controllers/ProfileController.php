@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Profile;
+use App\Http\Requests\StoreProfileRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +17,59 @@ use Inertia\Response;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        //
+        $profiles = Profile::all();
+        if (request()->wantsJson()) {
+            return response()->json($profiles);
+        }
+        return Inertia::render('welcome', ['profiles' => $profiles]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        //
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+            'major' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'class' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+        ]);
+
+        $profile = Profile::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json($profile, 201);
+        }
+        return redirect()->back()->with('success', 'Profile created');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Profile $profile)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
      */
     public function edit(Request $request): Response
     {
@@ -25,7 +80,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update the specified resource in storage.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -41,7 +96,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Remove the specified resource from storage.
      */
     public function destroy(Request $request): RedirectResponse
     {
