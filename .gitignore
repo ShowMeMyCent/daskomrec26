@@ -24,3 +24,16 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Frontend (handled by FE team)
+node_modules/
+resources/js/
+resources/css/
+package.json
+package-lock.json
+bun.lock
+vite.config.js
+tailwind.config.js
+postcss.config.js
+jsconfig.json
+
