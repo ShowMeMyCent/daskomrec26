@@ -3,6 +3,7 @@
 use App\Http\Controllers\StageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\PasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,16 +23,15 @@ Route::middleware('auth')->group(function (){
         return inertia('User/home');
     });
 
-    // Route::get('/user/profile', function () {
-    //     return inertia('User/profile');
-    // });
-
     Route::get('/user/profile', [ProfileController::class, 'index'])->name('Profile.index');
     Route::post('/user/profile', [ProfileController::class, 'update'])->name('Profile.update');
 
-    Route::get('/user/password', function () {
-        return inertia('User/password');
-    });
+    // Route::get('/user/password', function () {
+    //     return inertia('User/password');
+    // });
+
+    Route::get('/user/password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/user/password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::get('/user/assistants', function () {
         return inertia('User/assistants');
