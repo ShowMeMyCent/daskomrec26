@@ -608,6 +608,8 @@ export default function Caas({ users, stages, filters }) {
                         page: pageNum,
                         perPage: ITEMS_PER_PAGE,
                         search: searchQuery,
+                        stage_id: selectedStage,
+                        status: selectedStatus,
                     },
                     { preserveState: true },
                 );
@@ -633,8 +635,8 @@ export default function Caas({ users, stages, filters }) {
         searchTimeoutRef.current = setTimeout(() => {
             router.get(
                 "/admin/caas",
-                { 
-                    perPage: ITEMS_PER_PAGE, 
+                {
+                    perPage: ITEMS_PER_PAGE,
                     search: searchQuery,
                     stage_id: selectedStage,
                     status: selectedStatus,
@@ -644,7 +646,8 @@ export default function Caas({ users, stages, filters }) {
         }, 200);
 
         return () => {
-            if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+            if (searchTimeoutRef.current)
+                clearTimeout(searchTimeoutRef.current);
         };
     }, [searchQuery, selectedStage, selectedStatus, viewMode, ITEMS_PER_PAGE]);
 
@@ -784,19 +787,26 @@ export default function Caas({ users, stages, filters }) {
                                 <div className="flex gap-3">
                                     <select
                                         value={selectedStage}
-                                        onChange={(e) => setSelectedStage(e.target.value)}
+                                        onChange={(e) =>
+                                            setSelectedStage(e.target.value)
+                                        }
                                         className="bg-black/30 border border-white/10 rounded-sm px-3 py-2.5 text-xs text-cyan-100 focus:outline-none focus:border-cyan-500/50 transition-all"
                                     >
                                         <option value="">All Stages</option>
                                         {stages.map((stage) => (
-                                            <option key={stage.id} value={stage.id}>
+                                            <option
+                                                key={stage.id}
+                                                value={stage.id}
+                                            >
                                                 {stage.name}
                                             </option>
                                         ))}
                                     </select>
                                     <select
                                         value={selectedStatus}
-                                        onChange={(e) => setSelectedStatus(e.target.value)}
+                                        onChange={(e) =>
+                                            setSelectedStatus(e.target.value)
+                                        }
                                         className="bg-black/30 border border-white/10 rounded-sm px-3 py-2.5 text-xs text-cyan-100 focus:outline-none focus:border-cyan-500/50 transition-all"
                                     >
                                         <option value="">All Status</option>
@@ -1012,6 +1022,8 @@ export default function Caas({ users, stages, filters }) {
                                                     page: currentPage - 1,
                                                     perPage: ITEMS_PER_PAGE,
                                                     search: searchQuery,
+                                                    stage_id: selectedStage,
+                                                    status: selectedStatus,
                                                 },
                                                 { preserveState: true },
                                             )
@@ -1029,6 +1041,8 @@ export default function Caas({ users, stages, filters }) {
                                                     page: currentPage + 1,
                                                     perPage: ITEMS_PER_PAGE,
                                                     search: searchQuery,
+                                                    stage_id: selectedStage,
+                                                    status: selectedStatus,
                                                 },
                                                 { preserveState: true },
                                             )

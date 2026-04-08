@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Configuration;
+use App\Models\Stage;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,6 +38,8 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $userStageId = $request->user()?->caasStage?->stage_id;
+        $currentStageName = Stage::where('current_stage', true)->value('name');
+        $userCaasStageName = $request->user()?->caasStage?->stage?->name;
         
         return [
             ...parent::share($request),
@@ -54,6 +57,8 @@ class HandleInertiaRequests extends Middleware
                 : null,
 
             'userStageId' => $userStageId,
+            'currentStageName' => $currentStageName,
+            'userCaasStageName' => $userCaasStageName,
         ];
     }
 }

@@ -28,7 +28,7 @@ import {
     MagnifyingGlassIcon,
     EyeIcon,
     TrashIcon,
-} from "@heroicons/react/24/outline";
+} from "@heroicons/react/24/outline"; // MagnifyingGlassIcon already imported
 
 const formatDisplayDate = (dateString) => {
     if (!dateString) return "-";
@@ -159,10 +159,24 @@ const ShiftUsersModal = ({
     users,
     loading,
     removingPlottinganId,
+    searchQuery,
+    onSearchChange,
     onClose,
     onRemove,
 }) => {
     if (!isOpen || !shift) return null;
+
+    // Filter users based on search query
+    const filteredUsers = users.filter((plotting) => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        const name = plotting.user?.profile?.name || "";
+        const nim = plotting.user?.nim || "";
+        return (
+            name.toLowerCase().includes(query) ||
+            nim.toLowerCase().includes(query)
+        );
+    });
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -171,32 +185,46 @@ const ShiftUsersModal = ({
                 onClick={onClose}
             />
             <div className="relative w-full max-w-2xl bg-[#0a121d] border-2 border-double border-cyan-600/30 shadow-2xl animate-popIn flex flex-col max-h-[85vh] overflow-hidden">
-                <div className="p-8 border-b border-white/5 bg-[#050a10] flex justify-between items-center">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-cyan-500/60 uppercase tracking-[0.3em] mb-1">
-                            Users in Shift
-                        </span>
-                        <h2 className="text-4xl font-serif font-bold text-cyan-100 tracking-widest uppercase">
-                            {shift.shift_no}
-                        </h2>
-                        <span className="text-sm text-white/40 mt-1">
-                            {formatDisplayDate(shift.date)} |{" "}
-                            {formatDisplayTime(shift.time_start)} -{" "}
-                            {formatDisplayTime(shift.time_end)}
-                        </span>
+                <div className="p-8 border-b border-white/5 bg-[#050a10] flex flex-col gap-4">
+                    <div className="flex justify-between items-start">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-bold text-cyan-500/60 uppercase tracking-[0.3em] mb-1">
+                                Users in Shift
+                            </span>
+                            <h2 className="text-4xl font-serif font-bold text-cyan-100 tracking-widest uppercase">
+                                {shift.shift_no}
+                            </h2>
+                            <span className="text-sm text-white/40 mt-1">
+                                {formatDisplayDate(shift.date)} |{" "}
+                                {formatDisplayTime(shift.time_start)} -{" "}
+                                {formatDisplayTime(shift.time_end)}
+                            </span>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="text-white/40 hover:text-white transition-all"
+                        >
+                            <XMarkIcon className="w-8 h-8" />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-white/40 hover:text-white transition-all"
-                    >
-                        <XMarkIcon className="w-8 h-8" />
-                    </button>
+                    <div className="relative flex items-center">
+                        <MagnifyingGlassIcon className="absolute left-3 w-4 h-4 text-cyan-500/50" />
+                        <input
+                            type="text"
+                            placeholder="Search by name or NIM..."
+                            value={searchQuery}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            className="w-full bg-black/30 border border-white/10 rounded-sm pl-9 pr-4 py-2.5 text-xs text-cyan-100 focus:outline-none focus:border-cyan-500/50 transition-all"
+                        />
+                    </div>
                 </div>
                 <div className="flex-1 flex flex-col overflow-hidden text-white">
                     <div className="w-full p-10 flex flex-col gap-8 overflow-y-auto custom-scrollbar">
                         <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-3">
                             <IdentificationIcon className="w-6 h-6" />
-                            Assigned Users ({loading ? "..." : users.length})
+                            Assigned Users (
+                            {loading ? "..." : filteredUsers.length} /{" "}
+                            {users.length})
                         </h3>
                         {loading ? (
                             <p className="text-white/40 text-sm">
@@ -206,9 +234,13 @@ const ShiftUsersModal = ({
                             <p className="text-white/40 text-sm italic">
                                 No users assigned to this shift.
                             </p>
+                        ) : filteredUsers.length === 0 ? (
+                            <p className="text-white/40 text-sm italic">
+                                No users match your search.
+                            </p>
                         ) : (
                             <div className="flex flex-col gap-4">
-                                {users.map((plotting) => (
+                                {filteredUsers.map((plotting) => (
                                     <div
                                         key={plotting.id}
                                         className="p-5 bg-emerald-950/10 border border-white/5 flex justify-between items-center rounded-sm transition-all group hover:border-emerald-500/20"
@@ -365,6 +397,7 @@ export default function Plottingan({ shifts }) {
     const [loadingShiftUsers, setLoadingShiftUsers] = useState(false);
     const [removingPlottinganId, setRemovingPlottinganId] = useState(null);
     const [plottinganToRemove, setPlottinganToRemove] = useState(null);
+    const [shiftUsersSearchQuery, setShiftUsersSearchQuery] = useState("");
 
     const ITEMS_PER_PAGE = viewMode === "compact" ? 10 : 5;
     const currentPage = shifts.current_page;
@@ -396,6 +429,7 @@ export default function Plottingan({ shifts }) {
         setShiftUsers([]);
         setRemovingPlottinganId(null);
         setPlottinganToRemove(null);
+        setShiftUsersSearchQuery("");
     }, []);
 
     const handleSort = (key) => {
@@ -807,6 +841,8 @@ export default function Plottingan({ shifts }) {
                     users={shiftUsers}
                     loading={loadingShiftUsers}
                     removingPlottinganId={removingPlottinganId}
+                    searchQuery={shiftUsersSearchQuery}
+                    onSearchChange={setShiftUsersSearchQuery}
                     onClose={closeAllModals}
                     onRemove={handleRemoveFromPlottingan}
                 />

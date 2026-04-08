@@ -38,6 +38,8 @@ class PlottinganExport implements FromCollection, WithHeadings, WithMapping, Wit
             'Tanggal',
             'Nama',
             'NIM',
+            'Jurusan',
+            'Kelas',
         ];
     }
 
@@ -58,6 +60,8 @@ class PlottinganExport implements FromCollection, WithHeadings, WithMapping, Wit
             $formattedDate,
             $plottingan->user->profile->name ?? '-',
             (string) $plottingan->user->nim ?? '-',
+            $plottingan->user->profile->major ?? '-',
+            $plottingan->user->profile->class ?? '-',
         ];
     }
 
