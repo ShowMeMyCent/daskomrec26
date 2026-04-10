@@ -24,6 +24,8 @@ export default function Home() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isFalling, setIsFalling] = useState(false);
+    const [headClickCount, setHeadClickCount] = useState(0);
+    const [showZeusGif, setShowZeusGif] = useState(false);
 
     const toggleSidebar = () => {
         if (inputLocked || isLoggingOut) return;
@@ -40,8 +42,25 @@ export default function Home() {
     };
 
     const handleHeadClick = () => {
-        console.log("Leonidas Head Clicked!");
+        setHeadClickCount((prev) => {
+            const next = prev + 1;
+
+            if (next >= 5) {
+                setShowZeusGif(true);
+                return 0;
+            }
+
+            return next;
+        });
     };
+
+    useEffect(() => {
+        if (!showZeusGif) return;
+
+        // Tenor GIFs are looping images, so we hide it after a short playback window.
+        const hideTimer = setTimeout(() => setShowZeusGif(false), 10000);
+        return () => clearTimeout(hideTimer);
+    }, [showZeusGif]);
 
     useEffect(() => {
         const showTimer = setTimeout(() => setShowImage(true), 300);
@@ -217,8 +236,8 @@ export default function Home() {
                     <div
                         onClick={handleHeadClick}
                         className={`
-                            absolute bottom-[28%] left-[38%] w-[14%] md:w-[8%] lg:bottom-[18%] lg:left-[45%] lg:w-[5%] -translate-x-1/2 rotate-290
-                            z-10 pointer-events-auto cursor-pointer
+                            absolute bottom-[28%] left-[38%] w-[14%] md:w-[8%] lg:bottom-[18%] lg:left-[45%] lg:w-[5%] -translate-x-1/2
+                            z-10 pointer-events-auto
                             transition-opacity duration-300
                             ${!showImage ? "opacity-0" : "opacity-100"}
                         `}
@@ -256,10 +275,14 @@ export default function Home() {
                     className={`absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/30 pointer-events-none transition-opacity duration-1000 ${showImage && imageLoaded ? "opacity-100" : "opacity-0"}`}
                 />
 
-                <div className={`absolute top-6 left-6 z-70 transition-all duration-700 ease-out flex items-center ${!isZooming && !isLoggingOut ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6 pointer-events-none"}`} >
+                <div
+                    className={`absolute top-6 left-6 z-70 transition-all duration-700 ease-out flex items-center ${!isZooming && !isLoggingOut ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6 pointer-events-none"}`}
+                >
                     <ButtonSidebar onClick={toggleSidebar} />
 
-                    <div className={`transition-all duration-500 ease-in-out ${!isSidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 pointer-events-none"}`} >
+                    <div
+                        className={`transition-all duration-500 ease-in-out ${!isSidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 pointer-events-none"}`}
+                    >
                         <div className="animate-nudge flex items-center gap-3">
                             {/* Arrow */}
                             <svg
@@ -270,7 +293,11 @@ export default function Home() {
                                 stroke="currentColor"
                                 className="w-8 h-8 md:w-12 md:h-12 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                />
                             </svg>
 
                             <span className="text-sm md:text-xl font-serif uppercase tracking-widest text-cyan-200/90 drop-shadow-md whitespace-nowrap pt-[2px]">
@@ -315,10 +342,21 @@ export default function Home() {
                 <div
                     className="fixed inset-0 z-70 pointer-events-none transition-opacity duration-1000"
                     style={{
-                        background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)',
+                        background:
+                            "linear-gradient(to bottom, #0a2a4a, #0c365b)",
                         opacity: isLoggingOut ? 1 : 0,
                     }}
                 />
+
+                {showZeusGif && (
+                    <div className="fixed inset-0 z-90 flex items-center justify-center bg-black/70 pointer-events-none">
+                        <img
+                            src="https://c.tenor.com/w3karV6T6bYAAAAd/tenor.gif"
+                            alt="Zeus"
+                            className="w-[92vw] max-w-275 h-auto rounded-lg shadow-2xl"
+                        />
+                    </div>
+                )}
 
                 {/* Input lock */}
                 {inputLocked && (
@@ -326,7 +364,9 @@ export default function Home() {
                 )}
 
                 {/* Footer */}
-                <div className={`absolute bottom-4 w-full text-center z-20 pointer-events-none transition-opacity duration-1000 delay-500 ${isZooming ? "opacity-0" : "opacity-100"}`} >
+                <div
+                    className={`absolute bottom-4 w-full text-center z-20 pointer-events-none transition-opacity duration-1000 delay-500 ${isZooming ? "opacity-0" : "opacity-100"}`}
+                >
                     <p className="text-white font-caudex text-[8px] md:text-xl tracking-widest drop-shadow-md">
                         @Atlantis.DLOR2026. All Right Reserved
                     </p>

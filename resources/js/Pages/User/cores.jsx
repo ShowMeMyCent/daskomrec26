@@ -26,18 +26,26 @@ export default function Cores({ puzzles = [] }) {
         UNLOCKED: "unlocked",
     };
 
-    const CRYPT_TEXT = "==gCNEnY1pGIxRHIih2ZSBSSVBCaxpXcDByakVnRgcGauNXcCByboFmcoVHV"
+    const CRYPT_TEXT =
+        "==gCNEnY1pGIxRHIih2ZSBSSVBCaxpXcDByakVnRgcGauNXcCByboFmcoVHV";
 
     const clueMap = {};
     const puzzleIdMap = {};
+    const canUnlockMap = {};
+    const prerequisitesMap = {};
     puzzles.forEach((p) => {
         clueMap[p.name] = p.clue || "";
         puzzleIdMap[p.name] = p.id;
+        canUnlockMap[p.name] = p.canUnlock ?? true;
+        prerequisitesMap[p.name] = p.prerequisites ?? [];
     });
 
     const buildTerritoryStates = () => {
         const states = {};
         puzzles.forEach((p) => {
+            // If already unlocked, show as unlocked
+            // If can unlock (prerequisites met), show as locked
+            // If cannot unlock (prerequisites not met), show as locked but disabled
             states[p.name] = p.status ? STATUS.UNLOCKED : STATUS.LOCKED;
         });
         return states;
@@ -59,6 +67,12 @@ export default function Cores({ puzzles = [] }) {
 
     const handleMapInteract = (id) => {
         const currentStatus = territoryStates[id];
+        const canUnlock = canUnlockMap[id] ?? true;
+
+        // Don't interact if prerequisites not met
+        if (!canUnlock && currentStatus === STATUS.LOCKED) {
+            return;
+        }
 
         if (
             currentStatus === STATUS.LOCKED ||
@@ -257,6 +271,14 @@ export default function Cores({ puzzles = [] }) {
                 onSubmit={handleUnlockSubmit}
                 clue={clueMap[dialogState.territoryId] || ""}
                 isAlreadyUnlocked={dialogState.isAlreadyUnlocked}
+                canUnlock={canUnlockMap[dialogState.territoryId] ?? true}
+                prerequisiteNames={puzzles
+                    .filter((p) =>
+                        prerequisitesMap[dialogState.territoryId]?.includes(
+                            p.id,
+                        ),
+                    )
+                    .map((p) => p.name)}
             />
 
             <div className="relative w-full min-h-screen overflow-hidden">
@@ -330,11 +352,15 @@ export default function Cores({ puzzles = [] }) {
                     style={{ opacity: showImage && imageLoaded ? 1 : 0 }}
                 />
 
-                <div className={`absolute top-6 left-6 z-70 transition-all duration-700 ease-out ${!inputLocked && !isLoggingOut && !isExiting ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6 pointer-events-none"}`} >
+                <div
+                    className={`absolute top-6 left-6 z-70 transition-all duration-700 ease-out ${!inputLocked && !isLoggingOut && !isExiting ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6 pointer-events-none"}`}
+                >
                     <ButtonSidebar onClick={toggleSidebar} />
                 </div>
 
-                <div className={`absolute top-6 right-6 z-70 transition-all duration-700 ease-out ${!inputLocked && !isLoggingOut && !isExiting ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6 pointer-events-none"}`} >
+                <div
+                    className={`absolute top-6 right-6 z-70 transition-all duration-700 ease-out ${!inputLocked && !isLoggingOut && !isExiting ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6 pointer-events-none"}`}
+                >
                     <ButtonHome onClick={() => handleNavigate("/User/home")} />
                 </div>
 
@@ -352,6 +378,7 @@ export default function Cores({ puzzles = [] }) {
                 >
                     <CoresMap
                         territoryStates={territoryStates}
+                        canUnlockMap={canUnlockMap}
                         onTerritoryClick={handleMapInteract}
                     />
                 </div>
@@ -370,16 +397,19 @@ export default function Cores({ puzzles = [] }) {
                 )}
 
                 {/* Unlocked ALL */}
-                {allUnlocked && !isMapPlacing && !isExiting && !isLoggingOut && (
-                    <div className="absolute bottom-30 md:bottom-24 w-full flex justify-center z-50 transition-opacity duration-1000 animate-fadeIn">
-                        <button
-                            onClick={() => setIsSecretOpen(true)}
-                            className="glow-pulse px-8 py-4 bg-cyan-900/40 border-2 border-cyan-400/60 text-cyan-100 font-serif font-bold text-lg md:text-xl uppercase tracking-[0.3em] backdrop-blur-md hover:bg-cyan-500/30 hover:border-cyan-300 transition-all duration-300"
-                        >
-                            Reveal The Secret
-                        </button>
-                    </div>
-                )}
+                {allUnlocked &&
+                    !isMapPlacing &&
+                    !isExiting &&
+                    !isLoggingOut && (
+                        <div className="absolute bottom-20 md:bottom-24 w-full flex justify-center z-50 transition-opacity duration-1000 animate-fadeIn">
+                            <button
+                                onClick={() => setIsSecretOpen(true)}
+                                className="glow-pulse px-8 py-4 bg-cyan-900/40 border-2 border-cyan-400/60 text-cyan-100 font-serif font-bold text-lg md:text-xl uppercase tracking-[0.3em] backdrop-blur-md hover:bg-cyan-500/30 hover:border-cyan-300 transition-all duration-300"
+                            >
+                                Reveal The Secret
+                            </button>
+                        </div>
+                    )}
 
                 {/* Secret Modal */}
                 {isSecretOpen && (

@@ -1,100 +1,139 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo } from "react";
 
-import CardFem from '@assets/cards/Female_CAAS.webp';
-import CardBoy from '@assets/cards/Male_CAAS.webp';
+import CardFem from "@assets/cards/Female_CAAS.webp";
+import CardBoy from "@assets/cards/Male_CAAS.webp";
 
 const MAX_ROTATION = 8;
 const BUBBLE_COUNT = 15;
 
-export default function CardCaas({ sex, name, nim, cls, major }) {
-  const cardRef = useRef(null);
-  const containerRef = useRef(null);
+export default function CardCaas({ sex, name, nim, cls, major, onCardClick }) {
+    const cardRef = useRef(null);
+    const containerRef = useRef(null);
 
-  const [bubbles, setBubbles] = useState([]);
-  const [isPressed, setIsPressed] = useState(false);
+    const [bubbles, setBubbles] = useState([]);
+    const [clicked, setClicked] = useState(false);
 
-  const cardImage = useMemo(() => (sex === 'female' ? CardFem : CardBoy), [sex]);
+    const cardImage = useMemo(
+        () => (sex === "female" ? CardFem : CardBoy),
+        [sex],
+    );
 
-  const handlePointerMove = (e) => {
-    if (!containerRef.current) return;
+    const handlePointerMove = (e) => {
+        if (!containerRef.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-    const xPct = x / rect.width;
-    const yPct = y / rect.height;
+        const xPct = x / rect.width;
+        const yPct = y / rect.height;
 
-    const xRot = (yPct - 0.5) * 2;
-    const yRot = (xPct - 0.5) * 2;
+        const xRot = (yPct - 0.5) * 2;
+        const yRot = (xPct - 0.5) * 2;
 
-    containerRef.current.style.setProperty('--rx', `${-xRot * MAX_ROTATION}deg`);
-    containerRef.current.style.setProperty('--ry', `${yRot * MAX_ROTATION}deg`);
-    containerRef.current.style.setProperty('--mx', `${xPct * 100}%`);
-    containerRef.current.style.setProperty('--my', `${yPct * 100}%`);
-    containerRef.current.style.setProperty('--opacity', '1');
-  };
+        containerRef.current.style.setProperty(
+            "--rx",
+            `${-xRot * MAX_ROTATION}deg`,
+        );
+        containerRef.current.style.setProperty(
+            "--ry",
+            `${yRot * MAX_ROTATION}deg`,
+        );
+        containerRef.current.style.setProperty("--mx", `${xPct * 100}%`);
+        containerRef.current.style.setProperty("--my", `${yPct * 100}%`);
+        containerRef.current.style.setProperty("--opacity", "1");
+    };
 
-  const handlePointerLeave = () => {
-    setIsPressed(false);
+    const handlePointerLeave = () => {
+        setIsPressed(false);
 
-    if (!containerRef.current) return;
-    containerRef.current.style.setProperty('--rx', '0deg');
-    containerRef.current.style.setProperty('--ry', '0deg');
-    containerRef.current.style.setProperty('--opacity', '0');
-  };
+        if (!containerRef.current) return;
+        containerRef.current.style.setProperty("--rx", "0deg");
+        containerRef.current.style.setProperty("--ry", "0deg");
+        containerRef.current.style.setProperty("--opacity", "0");
+    };
 
-  const handlePointerDown = () => {
-    setIsPressed(true);
-    spawnBubbles();
-  };
+    const handlePointerDown = () => {
+        setIsPressed(true);
+        spawnBubbles();
+    };
 
-  const handlePointerUp = () => {
-    setIsPressed(false);
-  };
+    const handlePointerUp = () => {
+        setIsPressed(false);
+    };
 
-  const spawnBubbles = useCallback(() => {
-    const newBubbles = Array.from({ length: BUBBLE_COUNT }, (_, i) => {
-      const edge = Math.floor(Math.random() * 4);
-      let left, top;
+    const handleClick = () => {
+        if (clicked) return;
+        setClicked(true);
+        spawnBubbles();
+        if (onCardClick) onCardClick();
+        setTimeout(() => setClicked(false), 200);
+    };
 
-      switch (edge) {
-        case 0:
-          left = Math.random() * 100;
-          top = 0;
-          break; // Top
-        case 1:
-          left = 100;
-          top = Math.random() * 100;
-          break; // Right
-        case 2:
-          left = Math.random() * 100;
-          top = 100;
-          break; // Bottom
-        case 3:
-          left = -0;
-          top = Math.random() * 100;
-          break; // Left
-        default:
-          left = 0;
-          top = 0;
-      }
-      return {
-        id: Date.now() + i,
-        left, top,
-        size: 6 + Math.random() * 10,
-        duration: 1 + Math.random() * 1.5,
-        driftX: (Math.random() - 0.5) * 100,
-        driftY: -50 - Math.random() * 100,
-      };
-    });
-    setBubbles((prev) => [...prev, ...newBubbles]);
-  }, []);
+    const spawnBubbles = useCallback(() => {
+        const newBubbles = Array.from({ length: BUBBLE_COUNT }, (_, i) => {
+            const edge = Math.floor(Math.random() * 4);
+            let left, top;
 
-  return (
-    <>
+            switch (edge) {
+                case 0:
+                    left = Math.random() * 100;
+                    top = 0;
+                    break; // Top
+                case 1:
+                    left = 100;
+                    top = Math.random() * 100;
+                    break; // Right
+                case 2:
+                    left = Math.random() * 100;
+                    top = 100;
+                    break; // Bottom
+                case 3:
+                    left = -0;
+                    top = Math.random() * 100;
+                    break; // Left
+                default:
+                    left = 0;
+                    top = 0;
+            }
+            return {
+                id: Date.now() + i,
+                left,
+                top,
+                size: 6 + Math.random() * 10,
+                duration: 1 + Math.random() * 1.5,
+                driftX: (Math.random() - 0.5) * 100,
+                driftY: -50 - Math.random() * 100,
+            };
+        });
+        setBubbles((prev) => [...prev, ...newBubbles]);
+    }, []);
 
-      <style>{`
+    return (
+        <>
+            <svg style={{ display: "none" }}>
+                <defs>
+                    <filter id="pearl-noise">
+                        <feTurbulence
+                            type="fractalNoise"
+                            baseFrequency="0.6"
+                            numOctaves="2"
+                            result="noise"
+                        />
+                        <feColorMatrix
+                            type="matrix"
+                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.5 0"
+                        />
+                        <feBlend
+                            in="SourceGraphic"
+                            in2="noise"
+                            mode="multiply"
+                        />
+                    </filter>
+                </defs>
+            </svg>
+
+            <style>{`
         .card-container {
           --rx: 0deg;
           --ry: 0deg;
@@ -145,71 +184,72 @@ export default function CardCaas({ sex, name, nim, cls, major }) {
         }
       `}</style>
 
-      <div
-        ref={containerRef}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={handlePointerLeave}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className="card-container relative w-full max-w-[320px] sm:max-w-100 cursor-pointer group select-none"
-      >
-        <div
-          ref={cardRef}
-          className="card-inner relative w-full h-full rounded-xl overflow-hidden shadow-2xl"
-          style={{
-             '--scale': isPressed ? 0.96 : 1,
-             boxShadow: isPressed
-               ? '0 10px 20px -10px rgba(0, 0, 0, 0.6)'
-               : '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-          }}
-        >
-          <img
-            src={cardImage}
-            alt={name}
-            className="w-full h-full object-cover pointer-events-none"
-          />
-
-          <div className="card-foil absolute inset-0 pointer-events-none z-10" />
-
             <div
-                className="absolute inset-0 flex flex-col justify-end text-[#7C5D12] font-bold z-30 ml-32 mb-24 sm:ml-40 sm:mb-32 pointer-events-none"
-                style={{ fontFamily: 'Cormorant Infant, serif' }}
+                ref={containerRef}
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+                onClick={handleClick}
+                className="card-container relative w-full max-w-[320px] sm:max-w-100 cursor-pointer group select-none"
             >
-            {[name, nim, cls, major].map((text, idx) => (
-                <p
-                    key={`${text}-${idx}`}
-                    className="text-lg leading-6 sm:text-xl sm:leading-6 drop-shadow-sm truncate max-w-50"
-                    style={{ textShadow: '0 1px 4px rgba(255,255,255,0.7)' }}
+                <div
+                    ref={cardRef}
+                    className="card-inner relative w-full h-full rounded-xl overflow-hidden shadow-2xl"
+                    style={{
+                        "--scale": clicked ? 0.96 : 1,
+                        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                    }}
                 >
-                {text}
-                </p>
-            ))}
-            </div>
-        </div>
+                    <img
+                        src={cardImage}
+                        alt={name}
+                        className="w-full h-full object-cover pointer-events-none"
+                    />
 
-        {/* Bubble bubble */}
-        <div className="absolute inset-0 pointer-events-none z-50">
-          {bubbles.map((b) => (
-            <div
-              key={b.id}
-              className="bubble"
-              style={{
-                left: `${b.left}%`,
-                top: `${b.top}%`,
-                width: `${b.size}px`,
-                height: `${b.size}px`,
-                '--dur': `${b.duration}s`,
-                '--dx': `${b.driftX}px`,
-                '--dy': `${b.driftY}px`,
-              }}
-              onAnimationEnd={() =>
-                setBubbles((prev) => prev.filter((item) => item.id !== b.id))
-              }
-            />
-          ))}
-        </div>
-      </div>
-    </>
-  );
+                    <div className="card-foil absolute inset-0 pointer-events-none z-10" />
+
+                    <div
+                        className="absolute inset-0 flex flex-col justify-end text-[#7C5D12] font-bold z-30 ml-32 mb-24 sm:ml-40 sm:mb-32 pointer-events-none"
+                        style={{ fontFamily: "Cormorant Infant, serif" }}
+                    >
+                        {[name, nim, cls, major].map((text, idx) => (
+                            <p
+                                key={`${text}-${idx}`}
+                                className="text-lg leading-6 sm:text-xl sm:leading-6 drop-shadow-sm"
+                                style={{
+                                    textShadow:
+                                        "0 1px 4px rgba(255,255,255,0.7)",
+                                }}
+                            >
+                                {text}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Bubble bubble */}
+                <div className="absolute inset-0 pointer-events-none z-50">
+                    {bubbles.map((b) => (
+                        <div
+                            key={b.id}
+                            className="bubble"
+                            style={{
+                                left: `${b.left}%`,
+                                top: `${b.top}%`,
+                                width: `${b.size}px`,
+                                height: `${b.size}px`,
+                                "--dur": `${b.duration}s`,
+                                "--dx": `${b.driftX}px`,
+                                "--dy": `${b.driftY}px`,
+                            }}
+                            onAnimationEnd={() =>
+                                setBubbles((prev) =>
+                                    prev.filter((item) => item.id !== b.id),
+                                )
+                            }
+                        />
+                    ))}
+                </div>
+            </div>
+        </>
+    );
 }

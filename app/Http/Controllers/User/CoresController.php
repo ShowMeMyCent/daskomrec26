@@ -18,6 +18,8 @@ class CoresController extends Controller
                 'name' => $puzzle->name,
                 'clue' => $puzzle->clue,
                 'status' => $puzzle->status, // true = unlocked, false = locked
+                'prerequisites' => $puzzle->prerequisites ?? [],
+                'canUnlock' => $puzzle->canUnlock(),
             ];
         });
 

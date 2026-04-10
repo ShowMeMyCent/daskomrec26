@@ -1,27 +1,33 @@
-import { useRef, useState, useEffect } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { useRef, useState, useEffect } from "react";
+import { Head, router, usePage } from "@inertiajs/react";
 
 /* Background Assets */
-import Background from '@assets/backgrounds/Alternate.webp';
+import Background from "@assets/backgrounds/Alternate.webp";
 
 /* Decor Assets */
-import DecorRumput from '@assets/others/DECORATIONS/Seaweed & Coral Reefs/32.webp';
+import DecorRumput from "@assets/others/DECORATIONS/Seaweed & Coral Reefs/32.webp";
 
 /* Button Components */
-import ButtonSidebar from '@components/ButtonSidebar';
-import ButtonHome from '@components/ButtonHome';
+import ButtonSidebar from "@components/ButtonSidebar";
+import ButtonHome from "@components/ButtonHome";
 
 /* Other Components */
-import CardCaas from '@components/CaasCard';
-import UserSidebar from '@components/UserSidebar';
-import UnderwaterEffect from '@components/UnderwaterEffect';
+import CardCaas from "@components/CaasCard";
+import UserSidebar from "@components/UserSidebar";
+import UnderwaterEffect from "@components/UnderwaterEffect";
 
 export default function Profile() {
     const backgroundRef = useRef(null);
 
-    const {auth} = usePage().props;
+    const { auth, currentStageName, userCaasStageName } = usePage().props;
     const user = auth.user;
-    const profile= auth.profile|| {};
+    const profile = auth.profile || {};
+    const normalizedCurrentStage = (currentStageName || "")
+        .trim()
+        .toLowerCase();
+    const normalizedUserStage = (userCaasStageName || "").trim().toLowerCase();
+    const isRisingStage =
+        normalizedCurrentStage === "rising" || normalizedUserStage === "rising";
 
     const [showImage, setShowImage] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -32,10 +38,12 @@ export default function Profile() {
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isExiting, setIsExiting] = useState(false);
+    const [secretClickCount, setSecretClickCount] = useState(0);
+    const [isCardPeeled, setIsCardPeeled] = useState(false);
 
     const toggleSidebar = () => {
         if (inputLocked || isLoggingOut || isExiting) return;
-        setIsSidebarOpen(prev => !prev);
+        setIsSidebarOpen((prev) => !prev);
     };
 
     const handleNavigate = (url) => {
@@ -55,8 +63,30 @@ export default function Profile() {
 
         setTimeout(() => {
             setIsLoggingOut(true);
-            setTimeout(() => router.post('/logout'), 1000);
+            setTimeout(() => router.post("/logout"), 1000);
         }, 350);
+    };
+
+    const handleCardSecretClick = () => {
+        if (
+            !isRisingStage ||
+            inputLocked ||
+            isLoggingOut ||
+            isExiting ||
+            isCardPeeled
+        )
+            return;
+
+        setSecretClickCount((prev) => {
+            const next = prev + 1;
+
+            if (next >= 25) {
+                setIsCardPeeled(true);
+                return 25;
+            }
+
+            return next;
+        });
     };
 
     useEffect(() => {
@@ -74,15 +104,15 @@ export default function Profile() {
             setInputLocked(false);
         };
 
-        const handleKeyDown = e => e.key === 'Escape' && skipIntro();
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('click', skipIntro);
+        const handleKeyDown = (e) => e.key === "Escape" && skipIntro();
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("click", skipIntro);
 
         return () => {
             clearTimeout(showTimer);
             clearTimeout(placeCardTimer);
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('click', skipIntro);
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("click", skipIntro);
         };
     }, []);
 
@@ -133,9 +163,9 @@ export default function Profile() {
         return {
             transform: `scale(${scale})`,
             filter: `blur(${blur}px)`,
-            transformOrigin: 'center',
-            transition: 'transform 1s ease-in-out, filter 1s ease-in-out',
-            objectPosition: 'center 10%',
+            transformOrigin: "center",
+            transition: "transform 1s ease-in-out, filter 1s ease-in-out",
+            objectPosition: "center 10%",
         };
     };
 
@@ -152,10 +182,23 @@ export default function Profile() {
         return {
             transform: `scale(${scale}) rotate(${rotate}deg)`,
             opacity,
-            transition: 'transform 1s ease-in-out, opacity 1s ease-in-out',
-            perspective: '1000px',
+            transition: "transform 1s ease-in-out, opacity 1s ease-in-out",
+            perspective: "1000px",
         };
+    };
 
+    const getPeelFrontStyle = () => {
+        if (!isCardPeeled) {
+            return {
+                transform: "rotateY(0deg) translateX(0)",
+                opacity: 1,
+            };
+        }
+
+        return {
+            transform: "rotateY(-118deg) translateX(-24px)",
+            opacity: 0.15,
+        };
     };
 
     return (
@@ -164,11 +207,13 @@ export default function Profile() {
             <style>{styles}</style>
 
             <div className="relative w-full min-h-screen overflow-hidden">
-
                 {/* Filter */}
                 <div
                     className="absolute inset-0"
-                    style={{ background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)' }}
+                    style={{
+                        background:
+                            "linear-gradient(to bottom, #0a2a4a, #0c365b)",
+                    }}
                 />
 
                 <div className="absolute inset-0 cold-blue-filter">
@@ -182,11 +227,10 @@ export default function Profile() {
                     />
                 </div>
 
-
                 <div
                     className="absolute inset-0 pointer-events-none transition-opacity duration-1000"
                     style={{
-                        background: 'rgba(2, 99, 196, 0.2)'
+                        background: "rgba(2, 99, 196, 0.2)",
                     }}
                 />
 
@@ -202,11 +246,13 @@ export default function Profile() {
                 />
 
                 {/* Rumput Laut */}
-                <div className={`
+                <div
+                    className={`
                     absolute inset-0 z-20 pointer-events-none hidden md:block
                     transition-opacity duration-1000
-                    ${isCardPlacing || isExiting || isLoggingOut ? 'opacity-0' : 'opacity-100'}
-                `}>
+                    ${isCardPlacing || isExiting || isLoggingOut ? "opacity-0" : "opacity-100"}
+                `}
+                >
                     <div className="absolute bottom-[-10%] left-[-10%] w-[45vw] max-w-[620px] rotate-20 origin-bottom]">
                         <img
                             src={DecorRumput}
@@ -223,7 +269,7 @@ export default function Profile() {
                     </div>
 
                     <div className="absolute bottom-0 right-0 w-[40vw] h-[40vh] scale-x-[-1]">
-                         <div className="absolute bottom-[-10%] left-[-40%] w-[45vw] max-w-[620px] rotate-20 origin-bottom">
+                        <div className="absolute bottom-[-10%] left-[-40%] w-[45vw] max-w-[620px] rotate-20 origin-bottom">
                             <img
                                 src={DecorRumput}
                                 alt="Seaweed Right Back"
@@ -243,7 +289,7 @@ export default function Profile() {
                 {/* Sidebar Button */}
                 <div
                     className={`absolute top-6 left-6 z-70 transition-all duration-700 ease-out
-                        ${!inputLocked && !isLoggingOut && !isExiting ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-6 pointer-events-none'}`}
+                        ${!inputLocked && !isLoggingOut && !isExiting ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6 pointer-events-none"}`}
                 >
                     <ButtonSidebar onClick={toggleSidebar} />
                 </div>
@@ -251,9 +297,9 @@ export default function Profile() {
                 {/* Home Button */}
                 <div
                     className={`absolute top-6 right-6 z-70 transition-all duration-700 ease-out
-                        ${!inputLocked && !isLoggingOut && !isExiting ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6 pointer-events-none'}`}
+                        ${!inputLocked && !isLoggingOut && !isExiting ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6 pointer-events-none"}`}
                 >
-                    <ButtonHome onClick={() => handleNavigate('/User/home')} />
+                    <ButtonHome onClick={() => handleNavigate("/User/home")} />
                 </div>
 
                 {/* Sidebar */}
@@ -269,20 +315,68 @@ export default function Profile() {
                     className="absolute inset-0 flex items-center justify-center"
                     style={getCardStyle()}
                 >
-                    <CardCaas
-                        sex= {profile.gender?.toLowerCase() || 'male'}
-                        name={profile.name|| "Unknown"}
-                        nim={user.nim|| "0000000000"}
-                        cls={profile.class|| "XX-49-00"}
-                        major={profile.major|| "No Major"}
-                    />
+                    <div
+                        className="relative w-full max-w-[320px] sm:max-w-100"
+                        style={{ perspective: "1400px" }}
+                    >
+                        <div
+                            className="relative z-20 origin-left transition-all duration-1000"
+                            style={getPeelFrontStyle()}
+                        >
+                            <CardCaas
+                                sex={profile.gender?.toLowerCase() || "male"}
+                                name={profile.name || "Unknown"}
+                                nim={user.nim || "0000000000"}
+                                cls={profile.class || "XX-49-00"}
+                                major={profile.major || "No Major"}
+                                onCardClick={handleCardSecretClick}
+                            />
+                        </div>
+
+                        <div
+                            className={`absolute inset-0 rounded-xl border border-cyan-200/30 bg-linear-to-b from-[#103b5c]/95 via-[#0b2f4a]/95 to-[#061e30]/95 shadow-2xl transition-all duration-700 ${isCardPeeled ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+                        >
+                            <div className="h-full w-full flex flex-col items-center justify-center text-center px-6">
+                                <p className="text-cyan-200/80 text-xs mt-2 italic max-w-[34ch] leading-relaxed">
+                                    “We must hide it well from the Emperor of
+                                    Rome. His habit of shifting letters will
+                                    serve us once more… except for the numbers.
+                                    For those, we must be clever — look for the
+                                    boards that we usually use, Look Above the
+                                    boards!. Only then will the message remain
+                                    unseen.”
+                                    <br />~ Council of Atlantis
+                                </p>
+
+                                <p className="text-cyan-100 text-sm tracking-[0.35em] uppercase mt-6">
+                                    Cipher Instruction
+                                </p>
+
+                                <h2
+                                    className="text-white text-2xl sm:text-3xl mt-3"
+                                    style={{
+                                        fontFamily: "Cormorant Infant, serif",
+                                    }}
+                                >
+                                    Decipher the Method
+                                </h2>
+
+                                <p className="text-cyan-100/90 text-sm sm:text-base mt-3 leading-relaxed max-w-[30ch]">
+                                    From what you've gathered: Numbers transform
+                                    into symbols. Letters shift it two steps to
+                                    the right. That is all you need.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Exit Fade */}
                 <div
                     className="fixed inset-0 z-70 pointer-events-none transition-opacity duration-1000"
                     style={{
-                        background: 'linear-gradient(to bottom, #0a2a4a, #0c365b)',
+                        background:
+                            "linear-gradient(to bottom, #0a2a4a, #0c365b)",
                         opacity: isLoggingOut ? 1 : 0,
                     }}
                 />
@@ -293,11 +387,13 @@ export default function Profile() {
                 )}
 
                 {/* Footer */}
-                <div className={`
+                <div
+                    className={`
                     absolute bottom-4 w-full text-center z-40 pointer-events-none
                     transition-opacity duration-1000 delay-500
-                    ${isCardPlacing || isExiting || isLoggingOut ? 'opacity-0' : 'opacity-100'}
-                `}>
+                    ${isCardPlacing || isExiting || isLoggingOut ? "opacity-0" : "opacity-100"}
+                `}
+                >
                     <p className="text-white font-caudex text-[10px] md:text-xl tracking-widest drop-shadow-md">
                         @Atlantis.DLOR2026. All Right Served
                     </p>

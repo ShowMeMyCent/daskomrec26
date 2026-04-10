@@ -32,6 +32,16 @@ class PuzzleController extends Controller
             'answer' => 'required|string',
         ]);
 
+        // Check if prerequisites are met
+        if (!$puzzle->canUnlock()) {
+            $prerequisites = Puzzle::whereIn('id', $puzzle->prerequisites ?? [])->get();
+            $lockedPrereqs = $prerequisites->where('status', false)->pluck('name')->join(', ');
+            
+            return back()->withErrors([
+                'answer' => "You must unlock {$lockedPrereqs} first.",
+            ]);
+        }
+
         if (strtolower(trim($request->answer)) === strtolower(trim($puzzle->answer))) {
             $puzzle->update(['status' => true]);
 
