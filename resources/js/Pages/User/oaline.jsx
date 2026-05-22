@@ -69,6 +69,76 @@ export default function OaLinePage() {
         }
     }, []);
 
+    // ── Morse Code Player (Web Audio API) ──────────────────────────────────────
+    // ATLANTIS: .- - .-.. .- -. - .. ...
+    const MORSE_ATLANTIS = '.- - .-.. .- -. - .. ...';
+
+    const [isMorsePlaying, setIsMorsePlaying] = useState(false);
+
+    const playMorse = () => {
+        if (isMorsePlaying) return;
+
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+
+        const ctx = new AudioCtx();
+        const freq   = 600;   // Hz — classic CW tone
+        const unit   = 0.08;  // seconds — base unit (dot duration)
+        const dot    = unit;
+        const dash   = unit * 3;
+        const gap    = unit;        // gap between symbols in same letter
+        const lgap   = unit * 3;    // gap between letters
+        const wgap   = unit * 7;    // gap between words
+
+        // Build a timeline of { start, dur } for each beep
+        const beeps  = [];
+        let   cursor = ctx.currentTime + 0.05;
+
+        const beep = (dur) => { beeps.push({ start: cursor, dur }); cursor += dur; };
+        const pause = (dur) => { cursor += dur; };
+
+        const playChar = (symbols) => {
+            symbols.split('').forEach((s, i) => {
+                if (i > 0) pause(gap);
+                beep(s === '.' ? dot : dash);
+            });
+        };
+
+        // Parse morse string: space = letter gap, two-spaces = word gap
+        const words = MORSE_ATLANTIS.split('  ');
+        words.forEach((word, wi) => {
+            if (wi > 0) pause(wgap);
+            const letters = word.split(' ');
+            letters.forEach((letter, li) => {
+                if (li > 0) pause(lgap);
+                if (letter) playChar(letter);
+            });
+        });
+
+        // Schedule all beeps via OscillatorNodes
+        setIsMorsePlaying(true);
+        beeps.forEach(({ start, dur }) => {
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type      = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, start);
+            gain.gain.linearRampToValueAtTime(0.4, start + 0.005);
+            gain.gain.setValueAtTime(0.4, start + dur - 0.005);
+            gain.gain.linearRampToValueAtTime(0, start + dur);
+            osc.start(start);
+            osc.stop(start + dur);
+        });
+
+        // Re-enable click after all beeps finish
+        const totalDur = (cursor - ctx.currentTime + 0.1) * 1000;
+        setTimeout(() => setIsMorsePlaying(false), totalDur);
+    };
+    // ───────────────────────────────────────────────────────────────────────────
+
+
     const styles = `
         @keyframes dropIn {
             0% { transform: translateY(-150%); opacity: 0; }
@@ -220,7 +290,18 @@ export default function OaLinePage() {
 
                                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 w-full">
                                     {/* QR Code */}
-                                    <div className="shrink-0 bg-white p-2 rounded-xl shadow-lg rotate-0 sm:-rotate-2 transition-transform hover:rotate-0 duration-300">
+                                    <div
+                                        onClick={playMorse}
+                                        title="Click to transmit"
+                                        className={`
+                                            shrink-0 bg-white p-2 rounded-xl shadow-lg
+                                            rotate-0 sm:-rotate-2 transition-transform hover:rotate-0 duration-300
+                                            cursor-pointer select-none
+                                            ${isMorsePlaying
+                                                ? 'ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-transparent scale-95'
+                                                : 'hover:scale-105 active:scale-95'}
+                                        `}
+                                    >
                                         <img
                                             src={ImgLineQR}
                                             alt="QR Code Line"

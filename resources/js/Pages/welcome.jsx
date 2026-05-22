@@ -38,6 +38,119 @@ export default function Welcome() {
     const [isZooming, setIsZooming] = useState(true);
     const [inputLocked, setInputLocked] = useState(true);
 
+    // Ancient Greek transform state
+    const [ancientMode, setAncientMode] = useState(false);
+    const [displayLines, setDisplayLines] = useState([]);
+    const finalLinesRef = useRef([]);
+    const hasTransformed = useRef(false);
+    const scrambleTimerRef = useRef(null);
+
+    // Safe Greek characters — basic Greek block (U+0391–U+03C9), always renders
+    const GREEK_CHARS =
+        'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω';
+
+    const ORIGINAL_LINES = [
+        'True knowledge, like the lost kingdom, awaits only in the crushing deep.',
+        'The gates of this Atlantis have opened for those brave enough to endure the pressure.',
+        'We seek resilient guardians to uphold a legacy time could not erode.',
+        'Descend into the unknown and forge the future.',
+        'Are you ready for the adventure?',
+    ];
+
+    // Acrostic message — first char of each line, spaces → blank lines
+    const ACROSTIC = 'SMTH ON 404 PG';
+
+    // Build scrambled filler using random Greek chars
+    const greekFiller = (len) =>
+        Array.from({ length: len }, () =>
+            GREEK_CHARS[Math.floor(Math.random() * GREEK_CHARS.length)]
+        ).join('');
+
+    // Random Greek char
+    const randGreek = () =>
+        GREEK_CHARS[Math.floor(Math.random() * GREEK_CHARS.length)];
+
+    // Generate the final acrostic lines (first char is the acrostic letter)
+    const buildAcrosticLines = () => {
+        return ACROSTIC.split('').map((ch) => {
+            if (ch === ' ') return '';
+            const fillerLen = 15 + Math.floor(Math.random() * 25);
+            let rest = greekFiller(fillerLen);
+            const words = [];
+            while (rest.length > 0) {
+                const wordLen = 2 + Math.floor(Math.random() * 6);
+                words.push(rest.slice(0, wordLen));
+                rest = rest.slice(wordLen);
+            }
+            return ch + words.join(' ');
+        });
+    };
+
+    // Build display lines: chars before lockedCount → final, chars after → random Greek
+    const buildDisplayFrame = (finalLines, lockedCount) => {
+        let globalIdx = 0;
+        return finalLines.map((line) => {
+            if (line === '') return '';
+            const result = line
+                .split('')
+                .map((finalCh) => {
+                    const ch = globalIdx < lockedCount ? finalCh : randGreek();
+                    globalIdx++;
+                    return ch;
+                })
+                .join('');
+            return result;
+        });
+    };
+
+    // Transformers-style sequential decode animation
+    const startScramble = () => {
+        setAncientMode(true);
+        const finalLines = buildAcrosticLines();
+        finalLinesRef.current = finalLines;
+
+        const totalChars = finalLines.reduce((sum, l) => sum + l.length, 0);
+        let tickCount = 0;
+        const SCRAMBLE_TICKS = 15; // ~450ms of pure scramble before locking starts
+        const CHARS_PER_TICK = 2;  // lock 2 chars per tick after scramble phase
+
+        scrambleTimerRef.current = setInterval(() => {
+            tickCount++;
+            const locked =
+                tickCount > SCRAMBLE_TICKS
+                    ? (tickCount - SCRAMBLE_TICKS) * CHARS_PER_TICK
+                    : 0;
+
+            setDisplayLines(buildDisplayFrame(finalLines, locked));
+
+            if (locked >= totalChars) {
+                clearInterval(scrambleTimerRef.current);
+                scrambleTimerRef.current = null;
+                setDisplayLines(finalLines); // ensure final state is exact
+            }
+        }, 30);
+    };
+
+    const handleLogoClick = (e) => {
+        e.stopPropagation(); // don't fire the global skipIntro listener
+        if (ancientMode) {
+            setAncientMode(false);
+        } else if (!hasTransformed.current) {
+            // Only play the scramble animation once
+            hasTransformed.current = true;
+            startScramble();
+        } else {
+            // Already built — just toggle visibility
+            setAncientMode(true);
+            setDisplayLines(finalLinesRef.current);
+        }
+    };
+
+    // Cleanup on unmount
+    useEffect(() => () => {
+        if (scrambleTimerRef.current) clearInterval(scrambleTimerRef.current);
+    }, []);
+
     useEffect(() => {
         const zoomTimer = setTimeout(() => {
             setIsZooming(false);
@@ -291,11 +404,11 @@ export default function Welcome() {
 
                     <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-[#0C365B]/80" />
                     <div className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-1000 ${isZooming ? 'opacity-0' : 'opacity-100'}`}>
-                         <img
+                        <img
                             src={LogoDLOR}
                             alt="Intro Logo"
                             className="w-200 h-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
-                         />
+                        />
                     </div>
                 </div>
             </div>
@@ -323,7 +436,7 @@ export default function Welcome() {
                         }}
                         className="scale-125 cold-blue-filter relative"
                     >
-                         {fallingRocks.map((rock) => (
+                        {fallingRocks.map((rock) => (
                             <div
                                 key={rock.id}
                                 className="rock"
@@ -364,15 +477,40 @@ export default function Welcome() {
 
                             <div className="mb-8 flex justify-center items-center gap-2">
                                 <img src={LogoDaskom} alt="Logo Daskom" className="w-24 md:w-32 h-auto" />
-                                <img src={LogoDLOR} alt="Logo DLOR" className="w-32 md:w-48 h-auto" />
+                                {/* Clicking the DLOR logo triggers the ancient Greek transform */}
+                                <img
+                                    src={LogoDLOR}
+                                    alt="Logo DLOR"
+                                    onClick={handleLogoClick}
+                                    className={`w-32 md:w-48 h-auto cursor-pointer select-none transition-opacity duration-200 ${ancientMode ? 'opacity-70' : 'opacity-100 hover:opacity-80'}`}
+                                />
                             </div>
 
+                            {/* Small toggle hint */}
+                            {ancientMode && (
+                                <p className="text-xs text-cyan-300/60 tracking-widest uppercase mb-2 -mt-4 font-mono">
+                                    ── ancient script active · click logo to restore ──
+                                </p>
+                            )}
+
                             <div className="text-xl md:text-2xl sm:text-3xl leading-relaxed text-left drop-shadow-lg">
-                                <p className="mb-4">True knowledge, like the lost kingdom, awaits only in the crushing deep.</p>
-                                <p className="mb-4">The gates of this Atlantis have opened for those brave enough to endure the pressure.</p>
-                                <p className="mb-4">We seek resilient guardians to uphold a legacy time could not erode.</p>
-                                <p className="mb-4">Descend into the unknown and forge the future.</p>
-                                <p className="text-xl md:text-4xl font-bold mt-6">Are you ready for the adventure?</p>
+                                {ancientMode ? (
+                                    <div className="font-mono tracking-wide text-base md:text-lg leading-snug space-y-0">
+                                        {displayLines.map((line, i) => (
+                                            <p key={i} className={line === '' ? 'h-3' : 'mb-1'}>
+                                                {line || '\u00A0'}
+                                            </p>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="mb-4">True knowledge, like the lost kingdom, awaits only in the crushing deep.</p>
+                                        <p className="mb-4">The gates of this Atlantis have opened for those brave enough to endure the pressure.</p>
+                                        <p className="mb-4">We seek resilient guardians to uphold a legacy time could not erode.</p>
+                                        <p className="mb-4">Descend into the unknown and forge the future.</p>
+                                        <p className="text-xl md:text-4xl font-bold mt-6">Are you ready for the adventure?</p>
+                                    </>
+                                )}
                             </div>
 
                             <div onClick={handleScrollDown} className="mt-10 animate-bounce cursor-pointer flex">
@@ -380,6 +518,7 @@ export default function Welcome() {
                             </div>
                         </div>
                     </ParallaxLayer>
+
 
                     {/* Main Background */}
                     <ParallaxLayer offset={1.5} speed={0} factor={3} className="z-10">

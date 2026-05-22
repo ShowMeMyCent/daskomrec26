@@ -15,6 +15,7 @@ class Puzzle extends Model
         'answer',
         'status',
         'prerequisites',
+        'prerequisites_mode',
     ];
 
     protected $casts = [
@@ -25,11 +26,14 @@ class Puzzle extends Model
     protected $attributes = [
         'status' => false,
         'prerequisites' => null,
+        'prerequisites_mode' => 'AND',
     ];
 
     /**
      * Check if this puzzle can be unlocked based on prerequisites.
-     * Returns true if all prerequisite puzzles are unlocked, false otherwise.
+     *
+     * Mode 'AND' (default): ALL prerequisite puzzles must be unlocked.
+     * Mode 'OR':            AT LEAST ONE prerequisite puzzle must be unlocked.
      */
     public function canUnlock(): bool
     {
@@ -38,7 +42,19 @@ class Puzzle extends Model
         }
 
         $prerequisites = Puzzle::whereIn('id', $this->prerequisites)->get();
-        
+        $mode = strtoupper($this->prerequisites_mode ?? 'AND');
+
+        if ($mode === 'OR') {
+            // Unlock if at least one prerequisite is done
+            foreach ($prerequisites as $prereq) {
+                if ($prereq->status) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Default: AND mode — all prerequisites must be unlocked
         foreach ($prerequisites as $prereq) {
             if (!$prereq->status) {
                 return false;

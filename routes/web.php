@@ -97,6 +97,15 @@ Route::middleware('auth')->group(function (){
     });
 });
 
+// The Truth — ARG easter egg, only accessible via Inertia navigation (clicking Mike on 404)
+Route::get('/the-truth', function (\Illuminate\Http\Request $request) {
+    // Only allow Inertia (in-app) visits — block direct URL access
+    if (!$request->header('X-Inertia')) {
+        abort(404);
+    }
+    return inertia('TheTruth');
+});
+
 Route::fallback(function () {
     return inertia::render('404_NotFound');
 });

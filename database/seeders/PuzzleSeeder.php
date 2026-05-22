@@ -15,7 +15,7 @@ class PuzzleSeeder extends Seeder
      * 1. Northgard (first - no prerequisites)
      * 2. Euprus (requires Northgard)
      * 3. Xurith (requires Northgard)
-     * 4. Thevia (last - requires Euprus AND Xurith)
+     * 4. Thevia (last - requires Euprus OR Xurith, at least one)
      */
     public function run(): void
     {
@@ -49,13 +49,14 @@ class PuzzleSeeder extends Seeder
             'prerequisites' => [$northgard->id],
         ]);
 
-        // Create Thevia (requires Euprus AND Xurith)
+        // Create Thevia (requires Euprus OR Xurith — at least one must be done)
         $thevia = Puzzle::create([
             'name' => 'Thevia',
             'clue' => 'The twilight star',
             'answer' => '1234',
             'status' => false,
             'prerequisites' => [$euprus->id, $xurith->id],
+            'prerequisites_mode' => 'OR',
         ]);
     }
 }

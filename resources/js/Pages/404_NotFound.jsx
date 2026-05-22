@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 /* Background Assets */
 import Background from '@assets/backgrounds/Main.webp';
@@ -41,7 +41,10 @@ export default function NotFound() {
                         >
                             4
                         </span>
-                        <div className="relative w-[80px] sm:w-[120px] md:w-[180px] mb-2 sm:mb-4 md:mb-8">
+                        <div
+                            className="relative w-[80px] sm:w-[120px] md:w-[180px] mb-2 sm:mb-4 md:mb-8"
+                            onClick={() => router.visit('/the-truth')}
+                        >
                             <img
                                 src={Hijau}
                                 alt="Mike Wazowski"

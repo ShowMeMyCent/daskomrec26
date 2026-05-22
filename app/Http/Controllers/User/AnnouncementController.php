@@ -18,7 +18,7 @@ class AnnouncementController extends Controller
         $user = Auth::user();
 
         // Get the user's CaasStage record (unique per user, covers past & current stages)
-        $caasStage = CaasStage::where('user_id', $user->id)->first();
+        $caasStage = CaasStage::where('user_id', '=', $user->id, 'and')->first();
 
         if (!$caasStage) {
             return inertia('User/announcement', [
